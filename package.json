@@ -1,0 +1,15 @@
+{
+  "name": "team-metrics",
+  "description": "Team metrics is a tool with a collection of script to help you fetch information from dev tools such as Bitbucket, JIRA and others visualize leading indicators of team health and performance.",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "bun-automock": "^0.2.5"
+  }
+}
