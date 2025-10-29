@@ -3,6 +3,7 @@ export interface AppConfig {
     workspace: string;
     apiKey: string;
     baseUrl: string;
+    userEmail: string;
   };
   repositories: string[];
   onedrive: {
@@ -16,6 +17,7 @@ export interface AppConfig {
 
 const requiredEnvVars = [
   "BITBUCKET_WORKSPACE",
+  "BITBUCKET_USER_EMAIL",
   "BITBUCKET_API_KEY",
   "ONEDRIVE_FILE_PATH",
 ];
@@ -28,22 +30,23 @@ for (const envVar of requiredEnvVars) {
 
 export const appConfig: AppConfig = {
   bitbucket: {
-    workspace: process.env.BITBUCKET_WORKSPACE!,
-    apiKey: process.env.BITBUCKET_API_KEY!,
+    workspace: process.env.BITBUCKET_WORKSPACE!.trim(),
+    apiKey: process.env.BITBUCKET_API_KEY!.trim(),
     baseUrl: "https://api.bitbucket.org/2.0",
+    userEmail: process.env.BITBUCKET_USER_EMAIL!.trim(),
   },
   repositories: [
     "verychic-lambdas",
-    "verychic-web-apps",
-    "verychic",
-    "verychic-web",
-    "search-etl",
-    "verychic-serverless",
-    "search-api",
-    "verychic-e2e-tests",
-    "verychic_backoffice",
-    "verychic-commons",
-    "search_engine",
+    // "verychic-web-apps",
+    // "verychic",
+    // "verychic-web",
+    // "search-etl",
+    // "verychic-serverless",
+    // "search-api",
+    // "verychic-e2e-tests",
+    // "verychic_backoffice",
+    // "verychic-commons",
+    // "search_engine",
   ],
   onedrive: {
     filePath: process.env.ONEDRIVE_FILE_PATH!,
@@ -53,5 +56,3 @@ export const appConfig: AppConfig = {
   },
   timeRangeDays: 7,
 };
-
-console.log("appConfig", appConfig);

@@ -30,15 +30,19 @@ bun install
 
 ```bash
 BITBUCKET_WORKSPACE=verychic
+BITBUCKET_USER_EMAIL=your_email@example.com
 BITBUCKET_API_KEY=your_api_key_here
 ONEDRIVE_FILE_PATH=./metrics.xlsx
 ```
 
 ### Getting a Bitbucket API Key
 
+**Important**: You need a Bitbucket App Password, NOT an Atlassian API token.
+
 1. Go to Bitbucket Settings → Personal Settings → App Passwords
 2. Create an app password with repository read permissions
-3. Copy the password to `.env.production`
+3. Copy the password to `.env.production` as `BITBUCKET_API_KEY`
+4. Use your Bitbucket email as `BITBUCKET_USER_EMAIL`
 
 ## Usage
 

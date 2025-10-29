@@ -11,19 +11,19 @@ export class BitbucketClient implements IMetricsRepository {
   private readonly baseUrl: string;
   private readonly workspace: string;
   private readonly apiKey: string;
+  private readonly userEmail: string;
 
   constructor() {
     this.baseUrl = appConfig.bitbucket.baseUrl;
     this.workspace = appConfig.bitbucket.workspace;
+    this.userEmail = appConfig.bitbucket.userEmail;
     this.apiKey = appConfig.bitbucket.apiKey;
   }
 
   private async fetch<T>(endpoint: string): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    const auth = btoa(`${this.workspace}:${this.apiKey}`);
-
-    console.log("auth", auth);
-    console.log("url", url);
+    const auth = Buffer.from(`${this.userEmail}:${this.apiKey}`).toString('base64');
+    
     const response = await fetch(url, {
       headers: {
         Authorization: `Basic ${auth}`,
@@ -32,8 +32,9 @@ export class BitbucketClient implements IMetricsRepository {
     });
 
     if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
       throw new Error(
-        `Bitbucket API error: ${response.status} ${response.statusText}`
+        `Bitbucket API error: ${response.status} ${response.statusText}\n${errorText}`
       );
     }
 
@@ -60,9 +61,7 @@ export class BitbucketClient implements IMetricsRepository {
     repositoryName: string,
     since: Date
   ): Promise<PullRequestData[]> {
-    const endpoint = `/repositories/${
-      this.workspace
-    }/${repositoryName}/pullrequests?state=MERGED&q=updated_on>${since.toISOString()}`;
+    const endpoint = `/repositories/${this.workspace}/${repositoryName}/pullrequests?state=MERGED&state=OPEN&q=updated_on>${since.toISOString()}`;
 
     const prs = await this.fetchPaginated<PullRequestData>(endpoint);
 
@@ -75,6 +74,11 @@ export class BitbucketClient implements IMetricsRepository {
       createdOn: pr.created_on,
       destinationBranch: pr.destination?.branch?.name || "",
       sourceBranch: pr.source?.branch?.name || "",
+      commentCount: pr.comment_count,
+      tasksCount: pr.tasks,
+      reviewers: pr.reviewers,
+      participants: pr.participants,
+      links: pr.links,
     }));
   }
 
@@ -104,21 +108,20 @@ export class BitbucketClient implements IMetricsRepository {
     prId: number
   ): Promise<CommitData[]> {
     try {
-      const response = await fetch(
-        `${this.baseUrl}/repositories/${this.workspace}/${repositoryName}/pullrequests/${prId}/commits`,
-        {
-          headers: {
-            Authorization: `Basic ${btoa(`${this.workspace}:${this.apiKey}`)}`,
-            Accept: "application/json",
-          },
-        }
-      );
+      const auth = btoa(`${this.userEmail}:${this.apiKey}`);
+      const headers = {
+        Authorization: `Basic ${auth}`,
+        Accept: "application/json",
+      };
+      
+      const url = `${this.baseUrl}/repositories/${this.workspace}/${repositoryName}/pullrequests/${prId}/commits`;
+      let response = await fetch(url, { headers });
 
       if (!response.ok) {
         return [];
       }
 
-      const data = await response.json();
+      const data = await response.json() as any;
       const commits: CommitData[] = [];
       let next = data.next;
 
@@ -137,12 +140,14 @@ export class BitbucketClient implements IMetricsRepository {
       processCommits(data.values || []);
 
       while (next) {
-        const nextData = await fetch(next, {
-          headers: {
-            Authorization: `Basic ${btoa(`${this.workspace}:${this.apiKey}`)}`,
-            Accept: "application/json",
-          },
-        }).then((r) => r.json());
+        let nextData;
+        try {
+          const nextResponse = await fetch(next, { headers });
+          if (!nextResponse.ok) break;
+          nextData = await nextResponse.json();
+        } catch {
+          break;
+        }
         processCommits(nextData.values || []);
         next = nextData.next;
       }

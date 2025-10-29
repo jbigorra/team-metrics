@@ -1,7 +1,7 @@
 import type {
-  CommentData,
-  CommitData,
-  IMetricsRepository,
+    CommentData,
+    CommitData,
+    IMetricsRepository,
 } from "../../domain/interfaces/repository.ts";
 import type { PullRequestMetrics } from "../../domain/models/pr-metrics.ts";
 import { appConfig } from "../../infrastructure/config/index.ts";
@@ -30,7 +30,7 @@ export class MetricsCollector {
   }
 
   constructJiraUrl(key: string): string {
-    return `https://jira.yourcompany.com/browse/${key}`;
+    return `https://verychic.atlassian.net/browse/${key}`;
   }
 
   private processJiraInfo(title: string): { jiraRef: string; jiraUrl: string } {

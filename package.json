@@ -4,7 +4,8 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "collect-metrics": "NODE_ENV=production bun run src/scripts/collect-metrics.ts"
+    "collect-metrics": "NODE_ENV=production bun run src/scripts/collect-metrics.ts",
+    "test-script": "NODE_ENV=production bun run src/scripts/test.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
